@@ -20,4 +20,4 @@ MainTable::~MainTable()
 
 
 
-//Fahrat lox
+//Fahrat lox i pidor
