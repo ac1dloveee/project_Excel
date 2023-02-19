@@ -23,6 +23,12 @@
       <height>611</height>
      </rect>
     </property>
+    <property name="alternatingRowColors">
+     <bool>true</bool>
+    </property>
+    <property name="selectionMode">
+     <enum>QAbstractItemView::MultiSelection</enum>
+    </property>
    </widget>
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
