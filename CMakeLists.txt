@@ -17,6 +17,8 @@ set(PROJECT_SOURCES
         maintable.cpp
         maintable.h
         maintable.ui
+        right_mouse_button.h
+        right_mouse_button.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
