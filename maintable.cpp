@@ -26,73 +26,17 @@ MainTable::MainTable(QWidget *parent)
             }
             ui->bee_cell_table->setHorizontalHeaderLabels( bee_cell_table_list);
             //ui->bee_cell_table->setSpan(1,2,3,2); // ОБЪЕДИНЕНИЕ ЯЧЕЕК
-//keyCtrlC = new QShortcut(this);
-//keyCtrlC->setKey(/*Qt::CTRL +*/ Qt::Key_C);
-//connect (keyCtrlC,SIGNAL(activated()),this,SLOT(slotShortcutCtrlC()));
+keyCtrlC = new QShortcut(this);
+keyCtrlC->setKey(/*Qt::CTRL +*/ Qt::Key_C);
+connect (keyCtrlC,SIGNAL(activated()),this,SLOT(slotShortcutCtrlC()));
 }
 MainTable::~MainTable()
 {
     delete ui;
 }
-void MainTable::keyPressEvent(QKeyEvent *e)
+void MainTable::slotShortcutCtrlC()
 {
-
-
-
-
-    if (e->key() == Qt::Key_C)
-    {
-         QClipboard * clipboard = QApplication::clipboard();
-         QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
-
-         QString b_itemsStr;
-
-         int b_preRow = 0;
-
-         int b_curRow = 0;
-
-         int count = items.count();
-         for (int i =0 ; i < count ; i++){
-
-
-             b_curRow = ui->bee_cell_table->row(items.at (i)); // Получить выбранную строку
-
-            QTableWidgetItem *item = items.at(i);
-
-
-
-            if(i == 0) {
-
-            b_preRow = b_curRow;
-
-             b_itemsStr += item->text(); // Получить содержимое
-
-            continue;
-
-            }
-
-            if(b_preRow != b_curRow) {
-
-            b_preRow = b_curRow;
-
-            b_itemsStr += "\n";
-
-            } else {
-
-            b_itemsStr += "\t";
-
-            }
-
-             b_itemsStr += item->text (); // Получить содержимое
-
-            }
-         clipboard->setText(b_itemsStr);
-    }
-
-}
-/*void MainTable::slotShortcutCtrlC()
-{
-    /*QClipboard * clipboard = QApplication::clipboard();
+    QClipboard * clipboard = QApplication::clipboard();
     QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
     QString Buffer;
     int Row_1 = 0;
@@ -121,53 +65,7 @@ void MainTable::keyPressEvent(QKeyEvent *e)
        qDebug()<<Buffer;
     }
     clipboard->setText(Buffer);
-    QClipboard * clipboard = QApplication::clipboard();
-             QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
-
-             QString b_itemsStr;
-
-             int b_preRow = 0;
-
-             int b_curRow = 0;
-
-             int count = items.count();
-             for (int i =0 ; i < count ; i++){
-
-
-                 b_curRow = ui->bee_cell_table->row(items.at (i)); // Получить выбранную строку
-
-                QTableWidgetItem *item = items.at(i);
-
-
-
-                if(i == 0) {
-
-                b_preRow = b_curRow;
-
-                 b_itemsStr += item->text(); // Получить содержимое
-
-                continue;
-
-                }
-
-                if(b_preRow != b_curRow) {
-
-                b_preRow = b_curRow;
-
-                b_itemsStr += "\n";
-
-                } else {
-
-                b_itemsStr += "\t";
-
-                }
-
-                 b_itemsStr += item->text (); // Получить содержимое
-
-                }
-             clipboard->setText(b_itemsStr);
-
-}*/
+}
 
 
 
