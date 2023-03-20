@@ -27,7 +27,7 @@ MainTable::MainTable(QWidget *parent)
             ui->bee_cell_table->setHorizontalHeaderLabels( bee_cell_table_list);
             //ui->bee_cell_table->setSpan(1,2,3,2); // ОБЪЕДИНЕНИЕ ЯЧЕЕК
 keyCtrlC = new QShortcut(this);
-keyCtrlC->setKey(/*Qt::CTRL +*/ Qt::Key_C);
+keyCtrlC->setKey(Qt::CTRL + Qt::Key_C);
 connect (keyCtrlC,SIGNAL(activated()),this,SLOT(slotShortcutCtrlC()));
 }
 MainTable::~MainTable()
