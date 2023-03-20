@@ -1,0 +1,37 @@
+#ifndef MAINTABLE_H
+#define MAINTABLE_H
+
+#include <QMainWindow>
+#include <QString>
+#include <QStringList>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainTable; }
+QT_END_NAMESPACE
+
+class MainTable : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainTable(QWidget *parent = nullptr);
+    ~MainTable();
+
+private slots:
+
+
+    void on_bee_cell_table_cellChanged(int row, int column);
+
+private:
+    Ui::MainTable *ui;
+    QString currentCellText;
+    int isFunction(QString &);
+    QStringList functions;
+    bool correctSumFunction(QString, std::pair<int, int> &, std::pair<int, int> &);
+    bool isNumber(const QString &);
+    QString sum(const QString &);
+   protected:
+    //void keyPressEvent(QKeyEvent *e) override;
+};
+
+#endif // MAINTABLE_H
