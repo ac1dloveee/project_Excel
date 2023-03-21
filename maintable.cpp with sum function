@@ -11,7 +11,6 @@
 #include <QHeaderView>
 #include <QClipboard>
 #include <QKeyEvent>
-
 #include <vector>
 
 MainTable::MainTable(QWidget *parent)
@@ -30,9 +29,7 @@ MainTable::MainTable(QWidget *parent)
             ui->bee_cell_table->setHorizontalHeaderLabels( bee_cell_table_list);
             //ui->bee_cell_table->setSpan(1,2,3,2); // ОБЪЕДИНЕНИЕ ЯЧЕЕК
 
-
-
-            functions << "=SUM(";
+            functions << "=SUM(" << "=MAX(" << "=MIN(" << "=SARIF(";
 }
 MainTable::~MainTable()
 {
@@ -73,14 +70,17 @@ MainTable::~MainTable()
 void MainTable::on_bee_cell_table_cellChanged(int row, int column)
 {
     QString currentText = ui->bee_cell_table->item(row, column)->text();
-
+    currentText.replace(" ", "");
     if (currentText[0] == '=')
     {
         int function = isFunction(currentText);
 
         if (function ^ -1)
         {
-            ui->bee_cell_table->item(row, column)->setText(sum(currentText));
+            if (!function) ui->bee_cell_table->item(row, column)->setText(sum(currentText));
+            else if (function == 1) ui->bee_cell_table->item(row, column)->setText(max(currentText));
+            else if (function == 2) ui->bee_cell_table->item(row, column)->setText(min(currentText));
+            else if (function == 3)  ui->bee_cell_table->item(row, column)->setText(sa(currentText));
         }
 
         else return;
@@ -114,6 +114,78 @@ bool MainTable::correctSumFunction(QString str, std::pair<int, int> &col1, std::
     col1 = {}; col2 = {};
 
     int i = 5;
+    int nums = 1;
+
+    if (str[i].isLetter()) col1.first = str[i].unicode() - 65; else {col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col1.second+= nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; return 0; }
+    if (str[i] != ':') { col1 = {}; col2 = {}; return 0; } ++i;
+
+    nums = 1;
+
+    if (str[i].isLetter()) col2.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col2.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (col1.first > col2.first) std::swap(col1.first, col2.first);
+    if (col1.second > col2.second) std::swap(col1.second, col2.second);
+
+    return 1;
+}
+
+bool MainTable::correctMaxFunction(QString str, std::pair<int, int> &col1, std::pair<int, int> &col2)
+{
+    col1 = {}; col2 = {};
+
+    int i = 5;
+    int nums = 1;
+
+    if (str[i].isLetter()) col1.first = str[i].unicode() - 65; else {col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col1.second+= nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; return 0; }
+    if (str[i] != ':') { col1 = {}; col2 = {}; return 0; } ++i;
+
+    nums = 1;
+
+    if (str[i].isLetter()) col2.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col2.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (col1.first > col2.first) std::swap(col1.first, col2.first);
+    if (col1.second > col2.second) std::swap(col1.second, col2.second);
+
+    return 1;
+}
+
+bool MainTable::correctMinFunction(QString str, std::pair<int, int> &col1, std::pair<int, int> &col2)
+{
+    col1 = {}; col2 = {};
+
+    int i = 5;
+    int nums = 1;
+
+    if (str[i].isLetter()) col1.first = str[i].unicode() - 65; else {col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col1.second+= nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; return 0; }
+    if (str[i] != ':') { col1 = {}; col2 = {}; return 0; } ++i;
+
+    nums = 1;
+
+    if (str[i].isLetter()) col2.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col2.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (col1.first > col2.first) std::swap(col1.first, col2.first);
+    if (col1.second > col2.second) std::swap(col1.second, col2.second);
+
+    return 1;
+}
+
+bool MainTable::correctSaFunction(QString str, std::pair<int, int> &col1, std::pair<int, int> &col2)
+{
+    col1 = {}; col2 = {};
+
+    int i = 7;
     int nums = 1;
 
     if (str[i].isLetter()) col1.first = str[i].unicode() - 65; else {col1 = {}; col2 = {}; return 0; } ++i;
@@ -168,3 +240,93 @@ QString MainTable::sum(const QString &currentText)
         return QString::number(sum);
     }
 }
+
+QString MainTable::max(const QString &currentText)
+{
+    std::pair<int, int> firstColumn {0, 0};
+    std::pair<int, int> secondColumn {0, 0};
+
+    if (!correctMaxFunction(currentText.trimmed().toUpper(), firstColumn, secondColumn)) return "ERROR";
+    else
+    {
+        --firstColumn.second;
+        --secondColumn.second;
+
+        int maximum = INT_MIN;
+        QString buff{};
+
+        for (int i = firstColumn.first; i <= secondColumn.first; ++i)
+        {
+            for (int j = firstColumn.second; j <= secondColumn.second; ++j)
+            {
+                if (!(ui->bee_cell_table->item(j, i))) buff = "";
+                else
+                {
+                    buff = ui->bee_cell_table->item(j, i)->text();
+                    if (isNumber(buff) && (buff.toInt() > maximum)) maximum = buff.toInt();
+                }
+            }
+        }
+
+        return QString::number(maximum);
+    }
+}
+
+QString MainTable::min(const QString &currentText)
+{
+    std::pair<int, int> firstColumn {0, 0};
+    std::pair<int, int> secondColumn {0, 0};
+
+    if (!correctMinFunction(currentText.trimmed().toUpper(), firstColumn, secondColumn)) return "ERROR";
+    else
+    {
+        --firstColumn.second;
+        --secondColumn.second;
+
+        int minimum = INT_MAX;
+        QString buff{};
+
+        for (int i = firstColumn.first; i <= secondColumn.first; ++i)
+        {
+            for (int j = firstColumn.second; j <= secondColumn.second; ++j)
+            {
+                if (!(ui->bee_cell_table->item(j, i))) buff = "";
+                else
+                {
+                    buff = ui->bee_cell_table->item(j, i)->text();
+                    if (isNumber(buff) && (buff.toInt() < minimum)) minimum = buff.toInt();
+                }
+            }
+        }
+
+        return QString::number(minimum);
+    }
+}
+
+QString MainTable::sa(const QString &currentText)
+{
+    std::pair<int, int> firstColumn {0, 0};
+    std::pair<int, int> secondColumn {0, 0};
+
+    if (!correctSaFunction(currentText.trimmed().toUpper(), firstColumn, secondColumn)) return "ERROR";
+    else
+    {
+        --firstColumn.second;
+        --secondColumn.second;
+
+        double sum = 0;
+        QString buff{};
+
+        for (int i = firstColumn.first; i <= secondColumn.first; ++i)
+        {
+            for (int j = firstColumn.second; j <= secondColumn.second; ++j)
+            {
+                if (ui->bee_cell_table->item(j, i)) buff = ui->bee_cell_table->item(j, i)->text(); else buff = "";
+                if (isNumber(buff)) sum += buff.toInt();
+            }
+        }
+
+        return QString::number(sum / 2.0);
+    }
+}
+
