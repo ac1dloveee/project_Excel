@@ -28,8 +28,14 @@ private:
     int isFunction(QString &);
     QStringList functions;
     bool correctSumFunction(QString, std::pair<int, int> &, std::pair<int, int> &);
+    bool correctMaxFunction(QString, std::pair<int, int> &, std::pair<int, int> &);
+    bool correctMinFunction(QString, std::pair<int, int> &, std::pair<int, int> &);
+    bool correctSaFunction(QString, std::pair<int, int> &, std::pair<int, int> &);
     bool isNumber(const QString &);
     QString sum(const QString &);
+    QString max(const QString &);
+    QString min(const QString &);
+    QString sa(const QString &);
    protected:
     //void keyPressEvent(QKeyEvent *e) override;
 };
