@@ -36,6 +36,9 @@ MainTable::MainTable(QWidget *parent)
 keyCtrlC = new QShortcut(this);
 keyCtrlC->setKey(Qt::CTRL + Qt::Key_C);
 connect (keyCtrlC,SIGNAL(activated()),this,SLOT(slotShortcutCtrlC()));
+keyCtrlV = new QShortcut(this);
+keyCtrlV->setKey(Qt::CTRL + Qt::Key_V);
+connect (keyCtrlV,SIGNAL(activated()),this,SLOT(slotShortcutCtrlV()));
 Delete = new QShortcut(this);
 Delete->setKey(Qt::Key_Delete );
 connect (Delete,SIGNAL(activated()),this,SLOT(slotDelete()));
@@ -44,6 +47,7 @@ MainTable::~MainTable()
 {
     delete ui;
 }
+
 void MainTable::slotShortcutCtrlC()
 {
     QClipboard * clipboard = QApplication::clipboard();
@@ -56,7 +60,8 @@ void MainTable::slotShortcutCtrlC()
     int Column =0;
     for (int i =0 ; i < count ; i++)
     {
-       if (i == 0){
+       if (i == 0)
+       {
        Row_mn = ui->bee_cell_table->row(items.at(i));
        Column_mn = ui->bee_cell_table->column(items.at(i));
        Column_mx = Column_mn;
@@ -64,41 +69,117 @@ void MainTable::slotShortcutCtrlC()
        }
        Row = ui->bee_cell_table->row(items.at(i));
        Column = ui->bee_cell_table->column(items.at(i));
-
-       if (Column < Column_mn ){
+       if (Column < Column_mn )
+       {
            Column_mn = Column;
        }
-       if (Column > Column_mx){
+       if (Column > Column_mx)
+       {
            Column_mx =Column;
        }
-       if (Row < Row_mn ){
+       if (Row < Row_mn )
+       {
            Row_mn = Row;
        }
-       if (Row > Row_mx){
+       if (Row > Row_mx)
+       {
            Row_mx =Row;
        }
     }
-       qDebug()<<Column_mn<<"MIN";
-       qDebug()<<Column_mx<<"MIN";
-       qDebug()<<Row_mn<<"MIN";
-       qDebug()<<Row_mx<<"MAX";
-       int Row_1 =0 ;
+       int Row_1 = 0;
        int Row_2;
        int Column_2;
-       for (int i =Row_mn ;i <=Row_mx ; i++){
-           for (int j = Column_mn ; j<=Column_mx;j++){
-               if (ui->bee_cell_table->item(i,j)->text()!= ""){
-               Buffer +=ui->bee_cell_table->item(i,j)->text();}
-
+       for (int i =Row_mn ;i <=Row_mx ; i++)
+       {
+           for (int j = Column_mn ; j<=Column_mx;j++)
+           {
+               if (ui->bee_cell_table->item(i,j)->text()!= "")
+               {
+               if (j != Column_mx){
+               Buffer +=ui->bee_cell_table->item(i,j)->text() + "\t";
+               }
                else {
-                   Buffer+="\t";
-                    }
+                   Buffer +=ui->bee_cell_table->item(i,j)->text();
+               }
+               }
+               else
+               {
+                   if (j != Column_mx){
+                   Buffer +="\t";
+                   }
+               }
            }
-           if (i != Row_mx){
-           Buffer+="\n";}
+           if (i != Row_mx)
+           {
+           Buffer+="\n";
+           }
        }
-       qDebug()<<Buffer;
        clipboard->setText(Buffer);
+}
+void MainTable::slotShortcutCtrlV()
+{
+    QClipboard* c_board=QApplication::clipboard();
+    QString Buffer = c_board->text();
+    QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+    int Row_mn =0 , Row_mx =0;
+    int Column_mn =0 , Column_mx = 0;
+    int count = items.count();
+    int Row =0 ;
+    int Column =0;
+    for (int i =0 ; i < count ; i++)
+    {
+       if (i == 0)
+       {
+       Row_mn = ui->bee_cell_table->row(items.at(i));
+       Column_mn = ui->bee_cell_table->column(items.at(i));
+       Column_mx = Column_mn;
+       Row_mx = Row_mn;
+       }
+       Row = ui->bee_cell_table->row(items.at(i));
+       Column = ui->bee_cell_table->column(items.at(i));
+       if (Column < Column_mn )
+       {
+           Column_mn = Column;
+       }
+       if (Column > Column_mx)
+       {
+           Column_mx =Column;
+       }
+       if (Row < Row_mn )
+       {
+           Row_mn = Row;
+       }
+       if (Row > Row_mx)
+       {
+           Row_mx =Row;
+       }
+    }
+    Row = Row_mn;
+    Column = Column_mn;
+    std::string Buffer_str = Buffer.toStdString();
+    for (int i =0 ; i <Buffer_str.size(); i++)
+    {
+        if (Buffer_str[i]== '\t')
+        {
+            Column++;
+        }
+        if (Buffer_str[i]== '\n')
+        {
+            Row++;
+            Column = Column_mn;
+        }
+        if (Buffer_str[i] != '\t' && Buffer_str[i] != '\n')
+        {
+            std::string reserve;
+            while ( i < Buffer_str.size() && Buffer_str[i] != '\t' && Buffer_str[i] !='\n')
+            {
+                reserve+=Buffer_str[i];
+                i++;
+            }
+            i--;
+            ui->bee_cell_table->setItem(Row, Column, new QTableWidgetItem(QString::fromStdString(reserve)));
+        }
+    }
 }
 
 void MainTable::slotDelete()
@@ -112,7 +193,8 @@ void MainTable::slotDelete()
     int Column =0;
     for (int i =0 ; i < count ; i++)
     {
-       if (i == 0){
+       if (i == 0)
+       {
        Row_mn = ui->bee_cell_table->row(items.at(i));
        Column_mn = ui->bee_cell_table->column(items.at(i));
        Column_mx = Column_mn;
@@ -120,17 +202,20 @@ void MainTable::slotDelete()
        }
        Row = ui->bee_cell_table->row(items.at(i));
        Column = ui->bee_cell_table->column(items.at(i));
-
-       if (Column < Column_mn ){
+       if (Column < Column_mn )
+       {
            Column_mn = Column;
        }
-       if (Column > Column_mx){
+       if (Column > Column_mx)
+       {
            Column_mx =Column;
        }
-       if (Row < Row_mn ){
+       if (Row < Row_mn )
+       {
            Row_mn = Row;
        }
-       if (Row > Row_mx){
+       if (Row > Row_mx)
+       {
            Row_mx =Row;
        }
     }
@@ -142,7 +227,3 @@ void MainTable::slotDelete()
         }
     }
 }
-
-
-
-

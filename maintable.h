@@ -17,12 +17,13 @@ public:
 
 private slots:
 void slotShortcutCtrlC();
+void slotShortcutCtrlV();
 void slotDelete();
 private:
     Ui::MainTable *ui;
     QShortcut *keyCtrlC;
     QShortcut *Delete;
-
+    QShortcut *keyCtrlV;
 };
 
 #endif // MAINTABLE_H
