@@ -12,42 +12,48 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QTableWidgetItem>
+#include <QWidget>
+#include <QPoint>
+#include <QAction>
+#include <QApplication>
 MainTable::MainTable(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainTable)
 {
             ui->setupUi(this);
-            ui->bee_cell_table-> setRowCount (1500);
-            ui->bee_cell_table-> setColumnCount (1500);
+            ui->bee_cell_table-> setRowCount (4096);
+            ui->bee_cell_table-> setColumnCount (4096);
+            ui->bee_cell_table->setContextMenuPolicy(Qt::CustomContextMenu);
+            connect(ui->bee_cell_table, SIGNAL(customContextMenuRequested(QPoint)), SLOT(showContextMenu(QPoint)));
             QStringList bee_cell_table_list;
-            bee_cell_table_list << "A"<<"B"<<"C" <<"D"<<"F"<<"G"<<"H"<<"I"<<"J"<<"K"<<"L"<<"M"<<"N"<<"O"<<"P"<<"Q"<<"R"<<"S"<<"T"<<"U"<<"V"<<"W"<<"X"<<"Y"<<"Z";
-            for (int i =1 ; i <= 58 ; i++)
+            bee_cell_table_list << "A"<<"B"<<"C"<<"D"<<"E"<<"F"<<"G"<<"H"<<"I"<<"J"<<"K"<<"L"<<"M"<<"N"<<"O"<<"P"<<"Q"<<"R"<<"S"<<"T"<<"U"<<"V"<<"W"<<"X"<<"Y"<<"Z";
+            for (int i =1 ; i <= 163 ; i++)
             {
-                bee_cell_table_list << "A"+ QString::number(i) <<"B" + QString::number(i)<<"C" + QString::number(i) <<"D" + QString::number(i)<<"F" + QString::number(i)<<"G" + QString::number(i)<<"H" + QString::number(i)<<"I" + QString::number(i)<<"J" + QString::number(i)<<"K" + QString::number(i)<<"L" + QString::number(i)<<"M" + QString::number(i)<<"N" + QString::number(i)<<"O" + QString::number(i)<<"P" + QString::number(i)<<"Q"+ QString::number(i)<<"R"+ QString::number(i)<<"S" + QString::number(i)<<"T" + QString::number(i)<<"U" + QString::number(i)<<"V" + QString::number(i)<<"W" + QString::number(i)<<"X" + QString::number(i)<<"Y" + QString::number(i)<<"Z" + QString::number(i);
+                bee_cell_table_list << "A"+ QString::number(i) <<"B" + QString::number(i)<<"C" + QString::number(i) <<"D" + QString::number(i) <<"E" +QString::number(i)<<"F" + QString::number(i)<<"G" + QString::number(i)<<"H" + QString::number(i)<<"I" + QString::number(i)<<"J" + QString::number(i)<<"K" + QString::number(i)<<"L" + QString::number(i)<<"M" + QString::number(i)<<"N" + QString::number(i)<<"O" + QString::number(i)<<"P" + QString::number(i)<<"Q"+ QString::number(i)<<"R"+ QString::number(i)<<"S" + QString::number(i)<<"T" + QString::number(i)<<"U" + QString::number(i)<<"V" + QString::number(i)<<"W" + QString::number(i)<<"X" + QString::number(i)<<"Y" + QString::number(i)<<"Z" + QString::number(i);
             }
-            for (int i = 0 ; i <=1500;i++){
-                for (int j =0 ; j<=1500 ; j++){
-
+            for (int i = 0 ; i <=4096;i++){
+                for (int j =0 ; j<=4096 ; j++){
+                  //Заполнение ячеек таблицы пустыми значениями
                   ui->bee_cell_table->setItem(i, j, new QTableWidgetItem(""));
                 }
             }
             ui->bee_cell_table->setHorizontalHeaderLabels( bee_cell_table_list);
-            //ui->bee_cell_table->setSpan(1,2,3,2); // ОБЪЕДИНЕНИЕ ЯЧЕЕК
-keyCtrlC = new QShortcut(this);
-keyCtrlC->setKey(Qt::CTRL + Qt::Key_C);
-connect (keyCtrlC,SIGNAL(activated()),this,SLOT(slotShortcutCtrlC()));
-keyCtrlV = new QShortcut(this);
-keyCtrlV->setKey(Qt::CTRL + Qt::Key_V);
-connect (keyCtrlV,SIGNAL(activated()),this,SLOT(slotShortcutCtrlV()));
-Delete = new QShortcut(this);
-Delete->setKey(Qt::Key_Delete );
-connect (Delete,SIGNAL(activated()),this,SLOT(slotDelete()));
+        //Подключение слотов клавиш
+        keyCtrlC = new QShortcut(this);
+        keyCtrlC->setKey(Qt::CTRL + Qt::Key_C);
+        connect (keyCtrlC,SIGNAL(activated()),this,SLOT(slotShortcutCtrlC()));
+        keyCtrlV = new QShortcut(this);
+        keyCtrlV->setKey(Qt::CTRL + Qt::Key_V);
+        connect (keyCtrlV,SIGNAL(activated()),this,SLOT(slotShortcutCtrlV()));
+        Delete = new QShortcut(this);
+        Delete->setKey(Qt::Key_Delete );
+        connect (Delete,SIGNAL(activated()),this,SLOT(slotDelete()));
 }
 MainTable::~MainTable()
 {
     delete ui;
 }
-
+//Реализация CTRL+C
 void MainTable::slotShortcutCtrlC()
 {
     QClipboard * clipboard = QApplication::clipboard();
@@ -58,6 +64,7 @@ void MainTable::slotShortcutCtrlC()
     int count = items.count();
     int Row =0 ;
     int Column =0;
+    //Нахождение выбранной области
     for (int i =0 ; i < count ; i++)
     {
        if (i == 0)
@@ -116,6 +123,7 @@ void MainTable::slotShortcutCtrlC()
        }
        clipboard->setText(Buffer);
 }
+// РЕАЛИЗАЦИЯ CTRl+V
 void MainTable::slotShortcutCtrlV()
 {
     QClipboard* c_board=QApplication::clipboard();
@@ -126,6 +134,7 @@ void MainTable::slotShortcutCtrlV()
     int count = items.count();
     int Row =0 ;
     int Column =0;
+    //НАХОЖДЕНИЕ ВЫБРАННОЙ ЯЧЕЙКИ КУДА НЕОБХОДИМО ВСТАВИТЬ
     for (int i =0 ; i < count ; i++)
     {
        if (i == 0)
@@ -181,7 +190,7 @@ void MainTable::slotShortcutCtrlV()
         }
     }
 }
-
+//УДаление значений из выбранной области
 void MainTable::slotDelete()
 {
     QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
@@ -227,3 +236,18 @@ void MainTable::slotDelete()
         }
     }
 }
+void MainTable::showContextMenu(QPoint pos)
+{
+    QMenu* menu = new QMenu(this);
+    QAction* editBoard = new QAction(tr("Изменить границы"), this);
+    QAction* Span = new QAction(tr("Объденить ячейки"), this);
+    QAction* deleteCell = new QAction(tr("Удалить элемент ячейки"), this);
+    QAction* editFont = new QAction(tr("Изменить шрифт"), this);
+    menu->addAction(editBoard);
+    menu->addAction(Span);
+    menu->addAction(deleteCell);
+    menu->addAction(editFont);
+    menu->popup(ui->bee_cell_table->viewport()->mapToGlobal(pos));
+}
+//Изменение шрифта m_pViewerTable->setFont(QFont("Helvetica"));
+//ui->bee_cell_table->setSpan(1,2,3,2); // ОБЪЕДИНЕНИЕ ЯЧЕЕК
