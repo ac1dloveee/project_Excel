@@ -36,7 +36,12 @@ void slotShortcutCtrlC();
 void slotShortcutCtrlV();
 void slotDelete();
 void showContextMenu(QPoint);
-//void slotShortcutCtrl();
+void ChangeBoard();
+void Spans();
+void Delete_cell();
+void Change_font();
+void Change_Color();
+void Change_Color_text();
 private:
     Ui::MainTable *ui;
     QShortcut *keyCtrlC;

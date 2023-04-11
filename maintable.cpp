@@ -16,6 +16,10 @@
 #include <QPoint>
 #include <QAction>
 #include <QApplication>
+#include <QFontDialog>
+#include <QFont>
+#include <QColorDialog>
+#include <QColor>
 MainTable::MainTable(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainTable)
@@ -241,13 +245,211 @@ void MainTable::showContextMenu(QPoint pos)
     QMenu* menu = new QMenu(this);
     QAction* editBoard = new QAction(tr("Изменить границы"), this);
     QAction* Span = new QAction(tr("Объденить ячейки"), this);
+    connect(Span, SIGNAL(triggered()), this, SLOT(Spans()));
     QAction* deleteCell = new QAction(tr("Удалить элемент ячейки"), this);
+    connect(deleteCell, SIGNAL(triggered()), this, SLOT(Delete_cell()));
     QAction* editFont = new QAction(tr("Изменить шрифт"), this);
+    connect(editFont, SIGNAL(triggered()), this, SLOT(Change_font()));
+    QAction* editColor = new QAction(tr("Изменить цвет заливки ячейки"), this);
+    connect(editColor, SIGNAL(triggered()), this, SLOT(Change_Color()));
+    QAction* editColor_text = new QAction(tr("Изменить цвет текста ячейки"), this);
+    connect(editColor_text, SIGNAL(triggered()), this, SLOT(Change_Color_text()));
     menu->addAction(editBoard);
     menu->addAction(Span);
     menu->addAction(deleteCell);
     menu->addAction(editFont);
+    menu->addAction(editColor);
+    menu->addAction(editColor_text);
     menu->popup(ui->bee_cell_table->viewport()->mapToGlobal(pos));
 }
-//Изменение шрифта m_pViewerTable->setFont(QFont("Helvetica"));
-//ui->bee_cell_table->setSpan(1,2,3,2); // ОБЪЕДИНЕНИЕ ЯЧЕЕК
+void MainTable::ChangeBoard()
+{
+
+}
+
+void MainTable::Spans()
+{
+    QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+    QString Buffer;
+    int Row_mn =0 , Row_mx =0;
+    int Column_mn =0 , Column_mx = 0;
+    int count = items.count();
+    int Row =0 ;
+    int Column =0;
+    for (int i =0 ; i < count ; i++)
+    {
+       if (i == 0)
+       {
+       Row_mn = ui->bee_cell_table->row(items.at(i));
+       Column_mn = ui->bee_cell_table->column(items.at(i));
+       Column_mx = Column_mn;
+       Row_mx = Row_mn;
+       }
+       Row = ui->bee_cell_table->row(items.at(i));
+       Column = ui->bee_cell_table->column(items.at(i));
+       if (Column < Column_mn )
+       {
+           Column_mn = Column;
+       }
+       if (Column > Column_mx)
+       {
+           Column_mx =Column;
+       }
+       if (Row < Row_mn )
+       {
+           Row_mn = Row;
+       }
+       if (Row > Row_mx)
+       {
+           Row_mx =Row;
+       }
+    }
+    ui->bee_cell_table->setSpan(Row_mn,Column_mn,Row_mx-Row_mn+1,Column_mx-Column_mn+1);
+}
+void MainTable::Delete_cell()
+{
+    QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+    QString Buffer;
+    int Row_mn =0 , Row_mx =0;
+    int Column_mn =0 , Column_mx = 0;
+    int count = items.count();
+    int Row =0 ;
+    int Column =0;
+    for (int i =0 ; i < count ; i++)
+    {
+       if (i == 0)
+       {
+       Row_mn = ui->bee_cell_table->row(items.at(i));
+       Column_mn = ui->bee_cell_table->column(items.at(i));
+       Column_mx = Column_mn;
+       Row_mx = Row_mn;
+       }
+       Row = ui->bee_cell_table->row(items.at(i));
+       Column = ui->bee_cell_table->column(items.at(i));
+       if (Column < Column_mn )
+       {
+           Column_mn = Column;
+       }
+       if (Column > Column_mx)
+       {
+           Column_mx =Column;
+       }
+       if (Row < Row_mn )
+       {
+           Row_mn = Row;
+       }
+       if (Row > Row_mx)
+       {
+           Row_mx =Row;
+       }
+    }
+    for (int i =Row_mn ;i <=Row_mx ; i++)
+    {
+        for (int j = Column_mn ; j<=Column_mx;j++)
+        {
+             ui->bee_cell_table->setItem(i, j, new QTableWidgetItem(""));
+        }
+    }
+}
+void MainTable::Change_font()
+{
+    bool ok ;
+    QFont font = QFontDialog::getFont(&ok,QFont ("Segoe UI", 9));
+    ui->bee_cell_table->setFont(font);
+}
+void MainTable::Change_Color()
+{
+    QColor color = QColorDialog::getColor(Qt::white, this);
+    QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+    QString Buffer;
+    int Row_mn =0 , Row_mx =0;
+    int Column_mn =0 , Column_mx = 0;
+    int count = items.count();
+    int Row =0 ;
+    int Column =0;
+    for (int i =0 ; i < count ; i++)
+    {
+       if (i == 0)
+       {
+       Row_mn = ui->bee_cell_table->row(items.at(i));
+       Column_mn = ui->bee_cell_table->column(items.at(i));
+       Column_mx = Column_mn;
+       Row_mx = Row_mn;
+       }
+       Row = ui->bee_cell_table->row(items.at(i));
+       Column = ui->bee_cell_table->column(items.at(i));
+       if (Column < Column_mn )
+       {
+           Column_mn = Column;
+       }
+       if (Column > Column_mx)
+       {
+           Column_mx =Column;
+       }
+       if (Row < Row_mn )
+       {
+           Row_mn = Row;
+       }
+       if (Row > Row_mx)
+       {
+           Row_mx =Row;
+       }
+    }
+    for (int i =Row_mn ;i <=Row_mx ; i++)
+    {
+        for (int j = Column_mn ; j<=Column_mx;j++)
+        {
+             ui->bee_cell_table->item(i, j)->setBackground(QBrush(color));
+        }
+    }
+}
+
+void MainTable::Change_Color_text()
+{
+
+    QColor color = QColorDialog::getColor(Qt::black, this);
+    QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+    QString Buffer;
+    int Row_mn =0 , Row_mx =0;
+    int Column_mn =0 , Column_mx = 0;
+    int count = items.count();
+    int Row =0 ;
+    int Column =0;
+    for (int i =0 ; i < count ; i++)
+    {
+       if (i == 0)
+       {
+       Row_mn = ui->bee_cell_table->row(items.at(i));
+       Column_mn = ui->bee_cell_table->column(items.at(i));
+       Column_mx = Column_mn;
+       Row_mx = Row_mn;
+       }
+       Row = ui->bee_cell_table->row(items.at(i));
+       Column = ui->bee_cell_table->column(items.at(i));
+       if (Column < Column_mn )
+       {
+           Column_mn = Column;
+       }
+       if (Column > Column_mx)
+       {
+           Column_mx =Column;
+       }
+       if (Row < Row_mn )
+       {
+           Row_mn = Row;
+       }
+       if (Row > Row_mx)
+       {
+           Row_mx =Row;
+       }
+    }
+    for (int i =Row_mn ;i <=Row_mx ; i++)
+    {
+        for (int j = Column_mn ; j<=Column_mx;j++)
+        {
+             ui->bee_cell_table->item(i, j)->setForeground(color);
+        }
+    }
+}
+
+
