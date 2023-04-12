@@ -20,6 +20,7 @@
 #include <QFont>
 #include <QColorDialog>
 #include <QColor>
+#include <QMessageBox>
 MainTable::MainTable(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainTable)
@@ -304,12 +305,12 @@ void MainTable::Spans()
            Row_mx =Row;
        }
     }
+    QMessageBox::warning(this,"Внимание!","Будет сохранено только верхнее левое значение!");
     ui->bee_cell_table->setSpan(Row_mn,Column_mn,Row_mx-Row_mn+1,Column_mx-Column_mn+1);
 }
 void MainTable::Delete_cell()
 {
     QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
-    QString Buffer;
     int Row_mn =0 , Row_mx =0;
     int Column_mn =0 , Column_mx = 0;
     int count = items.count();
@@ -361,7 +362,6 @@ void MainTable::Change_Color()
 {
     QColor color = QColorDialog::getColor(Qt::white, this);
     QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
-    QString Buffer;
     int Row_mn =0 , Row_mx =0;
     int Column_mn =0 , Column_mx = 0;
     int count = items.count();
@@ -406,10 +406,8 @@ void MainTable::Change_Color()
 
 void MainTable::Change_Color_text()
 {
-
     QColor color = QColorDialog::getColor(Qt::black, this);
     QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
-    QString Buffer;
     int Row_mn =0 , Row_mx =0;
     int Column_mn =0 , Column_mx = 0;
     int count = items.count();
