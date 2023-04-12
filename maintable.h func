@@ -1,0 +1,54 @@
+#ifndef MAINTABLE_H
+#define MAINTABLE_H
+
+#include <QMainWindow>
+#include <QString>
+#include <QStringList>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class MainTable; }
+QT_END_NAMESPACE
+
+class MainTable : public QMainWindow
+{
+    Q_OBJECT
+
+public:
+    MainTable(QWidget *parent = nullptr);
+    ~MainTable();
+
+private slots:
+
+
+    void on_bee_cell_table_cellChanged(int row, int column);
+
+private:
+    Ui::MainTable *ui;
+    QString currentCellText;
+    int isFunction(QString &);
+    QStringList functions;
+    bool correctSumFunction(QString, std::pair<int, int> &, std::pair<int, int> &);
+    bool correctMaxFunction(QString, std::pair<int, int> &, std::pair<int, int> &);
+    bool correctMinFunction(QString, std::pair<int, int> &, std::pair<int, int> &);
+    bool correctSaFunction(QString, std::pair<int, int> &, std::pair<int, int> &);
+    bool correctEsliFunction(QString, std::pair<int, int> &, std::pair<int, int> &);
+    bool correctChooseFunction(QString, std::pair<int, int> &);
+    bool correctLookFunction(QString, QString&, std::pair<int, int> &, std::pair<int, int> &,
+                             std::pair<int, int> &, std::pair<int, int> &);
+    bool correctSearchPositionFunction(QString, std::pair<int, int> &, std::pair<int, int> &, QString &);
+    bool correctDateFunction(QString, std::pair<int, int> &, std::pair<int, int> &, std::pair<int, int> &);
+    bool isNumber(const QString &);
+    QString sum(const QString &);
+    QString max(const QString &);
+    QString min(const QString &);
+    QString sa(const QString &);
+    QString esli(const QString &);
+    QString choose(const QString &);
+    QString look(const QString &);
+    QString searchPosition(const QString &);
+    QString date(const QString &);
+   protected:
+    //void keyPressEvent(QKeyEvent *e) override;
+};
+
+#endif // MAINTABLE_H
