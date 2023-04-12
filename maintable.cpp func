@@ -1,0 +1,616 @@
+#include "maintable.h"
+#include "./ui_maintable.h"
+#include <string>
+#include <iomanip>
+#include <QApplication>
+#include <QString>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QHeaderView>
+#include <QClipboard>
+#include <QKeyEvent>
+#include <vector>
+
+#include <QDebug>
+
+MainTable::MainTable(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainTable)
+{
+            ui->setupUi(this);
+            ui->bee_cell_table-> setRowCount (1500);
+            ui->bee_cell_table-> setColumnCount (1500);
+            QStringList bee_cell_table_list;
+            bee_cell_table_list << "A"<<"B"<<"C" <<"D"<<"E"<<"F"<<"G"<<"H"<<"I"<<"J"<<"K"<<"L"<<"M"<<"N"<<"O"<<"P"<<"Q"<<"R"<<"S"<<"T"<<"U"<<"V"<<"W"<<"X"<<"Y"<<"Z";
+            for (int i =1 ; i <= 58 ; i++)
+            {
+                bee_cell_table_list << "A"+ QString::number(i) <<"B" + QString::number(i)<<"C" + QString::number(i) <<"D" + QString::number(i) << "E" + QString::number(i) <<"F" + QString::number(i)<<"G" + QString::number(i)<<"H" + QString::number(i)<<"I" + QString::number(i)<<"J" + QString::number(i)<<"K" + QString::number(i)<<"L" + QString::number(i)<<"M" + QString::number(i)<<"N" + QString::number(i)<<"O" + QString::number(i)<<"P" + QString::number(i)<<"Q"+ QString::number(i)<<"R"+ QString::number(i)<<"S" + QString::number(i)<<"T" + QString::number(i)<<"U" + QString::number(i)<<"V" + QString::number(i)<<"W" + QString::number(i)<<"X" + QString::number(i)<<"Y" + QString::number(i)<<"Z" + QString::number(i);
+            }
+            ui->bee_cell_table->setHorizontalHeaderLabels( bee_cell_table_list);
+            //ui->bee_cell_table->setSpan(1,2,3,2); // ОБЪЕДИНЕНИЕ ЯЧЕЕК
+
+            functions << "=SUM(" << "=MAX(" << "=MIN(" << "=SARIF(" << "=IF(" << "=CHOOSE(" << "=LOOK(" << "=SRCHPOS(" << "=DATE("  ;
+}
+MainTable::~MainTable()
+{
+    delete ui;
+}
+
+/*void MainTable::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Qt::Key_C)
+    {
+         QClipboard * clipboard = QApplication::clipboard();
+         QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+         QString b_itemsStr;
+         int b_pRow = 0;
+         int b_curRow = 0;
+         int count = items.count();
+         for (int i =0 ; i < count ; i++){
+             b_curRow = ui->bee_cell_table->row(items.at (i)); // Получить выбранную строку
+            QTableWidgetItem *item = items.at(i);
+            if(i == 0) {
+            b_preRow = b_curRow;
+             b_itemsStr += item->text(); // Получить содержимое
+            continue;
+            }
+            if(b_preRow != b_curRow) {
+            b_preRow = b_curRow;
+            b_itemsStr += "\n";
+            } else {
+            b_itemsStr += "\t";
+            }
+             b_itemsStr += item->text (); // Получить содержимое
+            }
+         clipboard->setText(b_itemsStr);
+    }
+}*/
+
+
+void MainTable::on_bee_cell_table_cellChanged(int row, int column)
+{
+    QString currentText = ui->bee_cell_table->item(row, column)->text();
+    currentText.replace(" ", "");
+    if (currentText[0] == '=')
+    {
+        int function = isFunction(currentText);
+
+        if (function ^ -1)
+        {
+            if (!function) ui->bee_cell_table->item(row, column)->setText(sum(currentText));
+            else if (function == 1) ui->bee_cell_table->item(row, column)->setText(max(currentText));
+            else if (function == 2) ui->bee_cell_table->item(row, column)->setText(min(currentText));
+            else if (function == 3)  ui->bee_cell_table->item(row, column)->setText(sa(currentText));
+            else if (function == 4) ui->bee_cell_table->item(row, column)->setText(esli(currentText));
+            else if (function == 5) ui->bee_cell_table->item(row, column)->setText(choose(currentText));
+            else if (function == 6) ui->bee_cell_table->item(row, column)->setText(look(currentText));
+            else if (function == 7) ui->bee_cell_table->item(row, column)->setText(searchPosition(currentText));
+            else if (function == 8) ui->bee_cell_table->item(row, column)->setText(date(currentText));
+        }
+
+        else return;
+    }
+}
+
+int MainTable::isFunction(QString &str)
+{
+    str = str.trimmed();
+    str.replace(" ", "");
+    str = str.toUpper();
+
+    bool currentFlag = 1;
+
+    for (int i = 0; i < functions.count(); ++i)
+    {
+        for (int j = 0; j < functions[i].length(); ++j)
+        {
+            if (functions[i][j] != str[j]) { currentFlag = 0; break; }
+        }
+
+        if (currentFlag) return i;
+        currentFlag = 1;
+    }
+
+    return -1;
+}
+
+bool MainTable::correctSumFunction(QString str, std::pair<int, int> &col1, std::pair<int, int> &col2)
+{
+    col1 = {}; col2 = {};
+
+    int i = 5;
+    int nums = 1;
+
+    if (str[i].isLetter()) col1.first = str[i].unicode() - 65; else {col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col1.second+= nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; return 0; }
+    if (str[i] != ':') { col1 = {}; col2 = {}; return 0; } ++i;
+
+    nums = 1;
+
+    if (str[i].isLetter()) col2.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col2.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (col1.first > col2.first) std::swap(col1.first, col2.first);
+    if (col1.second > col2.second) std::swap(col1.second, col2.second);
+
+    return 1;
+}
+
+bool MainTable::correctMaxFunction(QString str, std::pair<int, int> &col1, std::pair<int, int> &col2)
+{
+    col1 = {}; col2 = {};
+
+    int i = 5;
+    int nums = 1;
+
+    if (str[i].isLetter()) col1.first = str[i].unicode() - 65; else {col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col1.second+= nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; return 0; }
+    if (str[i] != ':') { col1 = {}; col2 = {}; return 0; } ++i;
+
+    nums = 1;
+
+    if (str[i].isLetter()) col2.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col2.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (col1.first > col2.first) std::swap(col1.first, col2.first);
+    if (col1.second > col2.second) std::swap(col1.second, col2.second);
+
+    return 1;
+}
+
+bool MainTable::correctMinFunction(QString str, std::pair<int, int> &col1, std::pair<int, int> &col2)
+{
+    col1 = {}; col2 = {};
+
+    int i = 5;
+    int nums = 1;
+
+    if (str[i].isLetter()) col1.first = str[i].unicode() - 65; else {col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col1.second+= nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; return 0; }
+    if (str[i] != ':') { col1 = {}; col2 = {}; return 0; } ++i;
+
+    nums = 1;
+
+    if (str[i].isLetter()) col2.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col2.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (col1.first > col2.first) std::swap(col1.first, col2.first);
+    if (col1.second > col2.second) std::swap(col1.second, col2.second);
+
+    return 1;
+}
+
+bool MainTable::correctSaFunction(QString str, std::pair<int, int> &col1, std::pair<int, int> &col2)
+{
+    col1 = {}; col2 = {};
+
+    int i = 7;
+    int nums = 1;
+
+    if (str[i].isLetter()) col1.first = str[i].unicode() - 65; else {col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col1.second+= nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; return 0; }
+    if (str[i] != ':') { col1 = {}; col2 = {}; return 0; } ++i;
+
+    nums = 1;
+
+    if (str[i].isLetter()) col2.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; return 0; } ++i;
+    while(str[i].isNumber()) { col2.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (col1.first > col2.first) std::swap(col1.first, col2.first);
+    if (col1.second > col2.second) std::swap(col1.second, col2.second);
+
+    return 1;
+}
+
+bool MainTable::correctEsliFunction(QString str, std::pair<int, int> &col1, std::pair<int, int> &col2)
+{
+
+}
+
+bool MainTable::correctChooseFunction(QString str, std::pair<int, int> &col1)
+{
+    col1 = {};
+
+    int i = 8;
+    int nums = 1;
+
+    if (str[i].isLetter()) col1.first = str[i].unicode() - 65; else { col1 = {}; return 0; } ++i;
+    while (str[i].isNumber()) { col1.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; return 0; }
+
+    return 1;
+}
+
+bool MainTable::correctLookFunction(QString str, QString &search, std::pair<int, int> &col1, std::pair<int, int> &col2,
+                                    std::pair<int, int> &col3, std::pair<int, int> &col4)
+{
+    col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear();
+
+    int i = 6;
+    int nums = 1;
+
+    while (str[i] != ',') { search += str[i]; ++i; } ++i;
+    if (str[i].isLetter()) col1.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; } ++i;
+    while (str[i].isNumber()) { col1.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; } nums = 1;
+    if (str[i] != ':') { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; } ++i;
+
+    if (str[i].isLetter()) col2.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; } ++i;
+    while(str[i].isNumber()) { col2.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; } nums = 1;
+    if (str[i] != ',') { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; } ++i;
+
+    if (str[i].isLetter()) col3.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; } ++i;
+    while (str[i].isNumber()) { col3.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; } nums = 1;
+    if (str[i] != ':') { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; } ++i;
+
+    if (str[i].isLetter()) col4.first = str[i].unicode() - 65; else { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; } ++i;
+    while(str[i].isNumber()) { col4.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; col3 = {}; col4 = {}; search.clear(); return 0; }
+
+    if (col1.first > col2.first) std::swap(col1.first, col2.first);
+    if (col1.second > col2.second) std::swap(col1.second, col2.second);
+
+    if (col3.first > col4.first) std::swap(col3.first, col4.first);
+    if (col3.second > col4.second) std::swap(col3.second, col4.second);
+
+    return 1;
+}
+
+bool MainTable::correctSearchPositionFunction(QString str, std::pair<int, int> &col1, std::pair<int, int> &col2, QString &search)
+{
+    col1 = {}; col2 = {}; search.clear();
+
+    int i = 9;
+    int nums = 1;
+
+    while (str[i] != ',')  { search += str[i]; ++i; } ++i;
+
+    if (str[i].isLetter()) { col1.first = str[i].unicode() - 65; } else { col1 = {}; col2 = {}; search.clear(); return 0; } ++i;
+    while (str[i].isNumber()) { col1.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; search.clear(); return 0; } nums = 1;
+    if (str[i] != ':') { col1 = {}; col2 = {}; search.clear(); return 0; } ++i;
+
+    if (str[i].isLetter()) { col2.first = str[i].unicode() - 65; } else { col1 = {}; col2 = {}; search.clear(); return 0; } ++i;
+    while (str[i].isNumber()) { col2.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { col1 = {}; col2 = {}; search.clear(); return 0; }
+
+    if (col1.first > col2.first) std::swap(col1.first, col2.first);
+    if (col1.second > col2.second) std::swap(col1.second, col2.second);
+
+    return 1;
+}
+
+bool MainTable::correctDateFunction(QString str, std::pair<int, int> &c1, std::pair<int, int> &c2, std::pair<int, int> &c3)
+{
+    c1 = {}; c2 = {}; c3 = {};
+
+    int i = 6;
+    int nums = 1;
+
+    if (str[i].isLetter()) { c1.first = str[i].unicode() - 65; } else { c1 = {}; c2 = {}; c3 = {}; return 0; } ++i;
+    while (str[i].isNumber()) { c1.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { c1 = {}; c2 = {}; c3 = {}; return 0; } nums = 1;
+    if (str[i] != ',') { c1 = {}; c2 = {}; c3 = {}; return 0; } ++i;
+
+    if (str[i].isLetter()) { c2.first = str[i].unicode() - 65; } else { c1 = {}; c2 = {}; c3 = {}; return 0; } ++i;
+    while (str[i].isNumber()) { c2.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { c1 = {}; c2 = {}; c3 = {}; return 0; } nums = 1;
+    if (str[i] != ',') { c1 = {}; c2 = {}; c3 = {}; return 0; } ++i;
+
+    if (str[i].isLetter()) { c3.first = str[i].unicode() - 65; } else { c1 = {}; c2 = {}; c3 = {}; return 0; } ++i;
+    while (str[i].isNumber()) { c3.second += nums * (str[i].unicode() - 48); nums *= 10; ++i; }
+
+    if (nums == 1) { c1 = {}; c2 = {}; c3 = {}; return 0; }
+
+    return 1;
+}
+
+bool MainTable::isNumber(const QString &str)
+{
+    if (!str.length()) return 0;
+
+    for (int i = 0; i < str.length(); ++i) if (!str[i].isDigit()) return 0;
+
+    return 1 ;
+}
+
+QString MainTable::sum(const QString &currentText)
+{
+    std::pair<int, int> firstColumn {0, 0};
+    std::pair<int, int> secondColumn {0, 0};
+
+    if (!correctSumFunction(currentText.trimmed().toUpper(), firstColumn, secondColumn)) return "ERROR";
+    else
+    {
+        --firstColumn.second;
+        --secondColumn.second;
+
+        int sum = 0;
+        QString buff{};
+
+        for (int i = firstColumn.first; i <= secondColumn.first; ++i)
+        {
+            for (int j = firstColumn.second; j <= secondColumn.second; ++j)
+            {
+                if (ui->bee_cell_table->item(j, i)) buff = ui->bee_cell_table->item(j, i)->text(); else buff = "";
+                if (isNumber(buff)) sum += buff.toInt();
+            }
+        }
+
+        return QString::number(sum);
+    }
+}
+
+QString MainTable::max(const QString &currentText)
+{
+    std::pair<int, int> firstColumn {0, 0};
+    std::pair<int, int> secondColumn {0, 0};
+
+    if (!correctMaxFunction(currentText.trimmed().toUpper(), firstColumn, secondColumn)) return "ERROR";
+    else
+    {
+        --firstColumn.second;
+        --secondColumn.second;
+
+        int maximum = INT_MIN;
+        QString buff{};
+
+        for (int i = firstColumn.first; i <= secondColumn.first; ++i)
+        {
+            for (int j = firstColumn.second; j <= secondColumn.second; ++j)
+            {
+                if (!(ui->bee_cell_table->item(j, i))) buff = "";
+                else
+                {
+                    buff = ui->bee_cell_table->item(j, i)->text();
+                    if (isNumber(buff) && (buff.toInt() > maximum)) maximum = buff.toInt();
+                }
+            }
+        }
+
+        return QString::number(maximum);
+    }
+}
+
+QString MainTable::min(const QString &currentText)
+{
+    std::pair<int, int> firstColumn {0, 0};
+    std::pair<int, int> secondColumn {0, 0};
+
+    if (!correctMinFunction(currentText.trimmed().toUpper(), firstColumn, secondColumn)) return "ERROR";
+    else
+    {
+        --firstColumn.second;
+        --secondColumn.second;
+
+        int minimum = INT_MAX;
+        QString buff{};
+
+        for (int i = firstColumn.first; i <= secondColumn.first; ++i)
+        {
+            for (int j = firstColumn.second; j <= secondColumn.second; ++j)
+            {
+                if (!(ui->bee_cell_table->item(j, i))) buff = "";
+                else
+                {
+                    buff = ui->bee_cell_table->item(j, i)->text();
+                    if (isNumber(buff) && (buff.toInt() < minimum)) minimum = buff.toInt();
+                }
+            }
+        }
+
+        return QString::number(minimum);
+    }
+}
+
+QString MainTable::sa(const QString &currentText)
+{
+    std::pair<int, int> firstColumn {0, 0};
+    std::pair<int, int> secondColumn {0, 0};
+
+    if (!correctSaFunction(currentText.trimmed().toUpper(), firstColumn, secondColumn)) return "ERROR";
+    else
+    {
+        --firstColumn.second;
+        --secondColumn.second;
+
+        double sum = 0;
+        QString buff{};
+
+        for (int i = firstColumn.first; i <= secondColumn.first; ++i)
+        {
+            for (int j = firstColumn.second; j <= secondColumn.second; ++j)
+            {
+                if (ui->bee_cell_table->item(j, i)) buff = ui->bee_cell_table->item(j, i)->text(); else buff = "";
+                if (isNumber(buff)) sum += buff.toInt();
+            }
+        }
+
+        return QString::number(sum / 2.0);
+    }
+}
+
+QString MainTable::esli(const QString &)
+{
+
+}
+
+QString MainTable::choose(const QString &str)
+{
+    std::pair<int, int> column{0, 0};
+
+    if (!correctChooseFunction(str, column)) return "ERROR";
+    else
+    {
+        --column.second;
+
+        return ui->bee_cell_table->item(column.second, column.first)->text();
+    }
+}
+
+QString MainTable::look(const QString &str)
+{
+    QString search{};
+    std::pair<int, int> firstColumn{};
+    std::pair<int, int> secondColumn{};
+    std::pair<int, int> thirdColumn{};
+    std::pair<int, int> fourthColumn{};
+
+    if (!correctLookFunction(str, search, firstColumn, secondColumn, thirdColumn, fourthColumn)) return "ERROR";
+    else
+    {
+        --firstColumn.second;
+        --secondColumn.second;
+        --thirdColumn.second;
+        --fourthColumn.second;
+
+        QString buff{};
+        int count = 0;
+
+        for (int i = firstColumn.first; i <= secondColumn.first; ++i)
+        {
+            for (int j = firstColumn.second; j <= secondColumn.second; ++j)
+            {
+                if (ui->bee_cell_table->item(j, i)) buff = ui->bee_cell_table->item(j, i)->text(); else buff = "";
+
+                if (buff == search)
+                {
+                    for (int k = thirdColumn.first; k <= fourthColumn.first; ++k)
+                    {
+                        for (int l = thirdColumn.second; l <= fourthColumn.second; ++l)
+                        {
+                            if (ui->bee_cell_table->item(l, k)) buff = ui->bee_cell_table->item(l, k)->text(); else buff = "";
+
+                            if (!count) return buff;
+                            --count;
+                        }
+                    }
+
+                    if (!count) return buff;
+                    else return "";
+                }
+
+                ++count;
+            }
+        }
+    }
+
+    return "";
+}
+
+QString MainTable::searchPosition(const QString &str)
+{
+    QString search{};
+    std::pair<int, int> firstColumn{};
+    std::pair<int, int> secondColumn{};
+
+    if (!correctSearchPositionFunction(str, firstColumn, secondColumn, search)) return "ERROR";
+
+    --firstColumn.second;
+    --secondColumn.second;
+
+    QString buff{};
+    int count = 1;
+
+    for (int i = firstColumn.first; i <= secondColumn.first; ++i)
+    {
+        for (int j = firstColumn.second; j <= secondColumn.second; ++j)
+        {
+            if (ui->bee_cell_table->item(j, i)) buff = ui->bee_cell_table->item(j, i)->text(); else buff = "";
+
+            buff = buff.toUpper();
+
+            if (search == buff) return QString::number(count);
+            ++count;
+        }
+    }
+
+    return "NOT FOUND";
+}
+
+QString MainTable::date(const QString &str)
+{
+    std::pair<int, int> year{};
+    std::pair<int, int> month{};
+    std::pair<int, int> day{};
+
+    if (!correctDateFunction(str, year, month, day)) return "ERROR";
+
+    QString buff{};
+    bool flag = 1;
+    QString res{};
+    int yearInt = 1;
+    int monthInt = 1;
+    int dayInt = 1;
+
+    --year.second;
+    --month.second;
+    --day.second;
+
+    if (ui->bee_cell_table->item(year.second, year.first)) buff = ui->bee_cell_table->item(year.second, year.first)->text();
+
+    for (int i = 0; i < buff.length(); ++i)
+    {
+        if (!buff[i].isNumber()) { flag = 0; break; }
+    }
+
+    if (flag) { yearInt = buff.toInt(); } else return "NaN";
+
+    if (ui->bee_cell_table->item(month.second, month.first)) buff = ui->bee_cell_table->item(month.second, month.first)->text(); else buff = "";
+
+    for (int i = 0; i < buff.length(); ++i)
+    {
+        if (!buff[i].isNumber()) { flag = 0; break; }
+    }
+
+    if (flag) { monthInt = buff.toInt(); } else return "NaN";
+
+    if (ui->bee_cell_table->item(day.second, day.first)) buff = ui->bee_cell_table->item(day.second, day.first)->text(); else buff = "";
+
+    for (int i = 0; i < buff.length(); ++i)
+    {
+        if (!buff[i].isNumber()) { flag = 0; break; }
+    }
+
+    if (flag) { dayInt = buff.toInt(); } else return "NaN";
+
+    if (dayInt <= 0 || monthInt <= 0 || yearInt <= 0) return "NaN";
+
+    if (dayInt > 31 || monthInt > 12 || yearInt > 9999) return "NaN";
+
+    if (monthInt == 2)
+    {
+        if (( (!(yearInt % 4)) && (yearInt % 100) ) || ( !(yearInt % 400) ) )
+        {
+            if (dayInt > 29) return "NaN";
+        }
+        else if (dayInt > 28) return "NaN";
+    }
+    else
+    {
+        if (dayInt > 30 + (monthInt + (monthInt / 8)) % 2) return "NaN";
+    }
+
+    return QString::number(dayInt) + '.' + QString::number(monthInt) + '.' + QString::number(yearInt);
+}
