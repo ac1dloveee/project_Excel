@@ -21,6 +21,10 @@
 #include <QColorDialog>
 #include <QColor>
 #include <QMessageBox>
+#include <QUndoCommand>
+#include <QUndoStack>
+#include <QPen>
+#include <QUndoGroup>
 MainTable::MainTable(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainTable)
@@ -36,13 +40,15 @@ MainTable::MainTable(QWidget *parent)
             {
                 bee_cell_table_list << "A"+ QString::number(i) <<"B" + QString::number(i)<<"C" + QString::number(i) <<"D" + QString::number(i) <<"E" +QString::number(i)<<"F" + QString::number(i)<<"G" + QString::number(i)<<"H" + QString::number(i)<<"I" + QString::number(i)<<"J" + QString::number(i)<<"K" + QString::number(i)<<"L" + QString::number(i)<<"M" + QString::number(i)<<"N" + QString::number(i)<<"O" + QString::number(i)<<"P" + QString::number(i)<<"Q"+ QString::number(i)<<"R"+ QString::number(i)<<"S" + QString::number(i)<<"T" + QString::number(i)<<"U" + QString::number(i)<<"V" + QString::number(i)<<"W" + QString::number(i)<<"X" + QString::number(i)<<"Y" + QString::number(i)<<"Z" + QString::number(i);
             }
-            for (int i = 0 ; i <=4096;i++){
-                for (int j =0 ; j<=4096 ; j++){
+            for (int i = 0 ; i <=4096;i++)
+            {
+                for (int j =0 ; j<=4096 ; j++)
+                {
                   //Заполнение ячеек таблицы пустыми значениями
                   ui->bee_cell_table->setItem(i, j, new QTableWidgetItem(""));
                 }
             }
-            ui->bee_cell_table->setHorizontalHeaderLabels( bee_cell_table_list);
+        ui->bee_cell_table->setHorizontalHeaderLabels( bee_cell_table_list);
         //Подключение слотов клавиш
         keyCtrlC = new QShortcut(this);
         keyCtrlC->setKey(Qt::CTRL + Qt::Key_C);
@@ -50,6 +56,9 @@ MainTable::MainTable(QWidget *parent)
         keyCtrlV = new QShortcut(this);
         keyCtrlV->setKey(Qt::CTRL + Qt::Key_V);
         connect (keyCtrlV,SIGNAL(activated()),this,SLOT(slotShortcutCtrlV()));
+        keyCtrlZ = new QShortcut(this);
+        keyCtrlZ->setKey(Qt::CTRL + Qt::Key_Z);
+        connect (keyCtrlZ,SIGNAL(activated()),this,SLOT(slotShortcutCtrlZ()));
         Delete = new QShortcut(this);
         Delete->setKey(Qt::Key_Delete );
         connect (Delete,SIGNAL(activated()),this,SLOT(slotDelete()));
@@ -195,6 +204,11 @@ void MainTable::slotShortcutCtrlV()
         }
     }
 }
+
+void MainTable::slotShortcutCtrlZ()
+{
+
+}
 //УДаление значений из выбранной области
 void MainTable::slotDelete()
 {
@@ -247,7 +261,7 @@ void MainTable::showContextMenu(QPoint pos)
     QAction* editBoard = new QAction(tr("Изменить границы"), this);
     QAction* Span = new QAction(tr("Объденить ячейки"), this);
     connect(Span, SIGNAL(triggered()), this, SLOT(Spans()));
-    QAction* deleteCell = new QAction(tr("Удалить элемент ячейки"), this);
+    QAction* deleteCell = new QAction(tr("Очистить ячейки"), this);
     connect(deleteCell, SIGNAL(triggered()), this, SLOT(Delete_cell()));
     QAction* editFont = new QAction(tr("Изменить шрифт"), this);
     connect(editFont, SIGNAL(triggered()), this, SLOT(Change_font()));
@@ -265,7 +279,47 @@ void MainTable::showContextMenu(QPoint pos)
 }
 void MainTable::ChangeBoard()
 {
-
+    QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+    int Row_mn =0 , Row_mx =0;
+    int Column_mn =0 , Column_mx = 0;
+    int count = items.count();
+    int Row =0 ;
+    int Column =0;
+    for (int i =0 ; i < count ; i++)
+    {
+       if (i == 0)
+       {
+       Row_mn = ui->bee_cell_table->row(items.at(i));
+       Column_mn = ui->bee_cell_table->column(items.at(i));
+       Column_mx = Column_mn;
+       Row_mx = Row_mn;
+       }
+       Row = ui->bee_cell_table->row(items.at(i));
+       Column = ui->bee_cell_table->column(items.at(i));
+       if (Column < Column_mn )
+       {
+           Column_mn = Column;
+       }
+       if (Column > Column_mx)
+       {
+           Column_mx =Column;
+       }
+       if (Row < Row_mn )
+       {
+           Row_mn = Row;
+       }
+       if (Row > Row_mx)
+       {
+           Row_mx =Row;
+       }
+    }
+    for (int i =Row_mn ;i <=Row_mx ; i++)
+    {
+        for (int j = Column_mn ; j<=Column_mx;j++)
+        {
+             //ui->bee_cell_table->item(i,j)->setTextAlignment()
+        }
+    }
 }
 
 void MainTable::Spans()
@@ -356,7 +410,47 @@ void MainTable::Change_font()
 {
     bool ok ;
     QFont font = QFontDialog::getFont(&ok,QFont ("Segoe UI", 9));
-    ui->bee_cell_table->setFont(font);
+    QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+    int Row_mn =0 , Row_mx =0;
+    int Column_mn =0 , Column_mx = 0;
+    int count = items.count();
+    int Row =0 ;
+    int Column =0;
+    for (int i =0 ; i < count ; i++)
+    {
+       if (i == 0)
+       {
+       Row_mn = ui->bee_cell_table->row(items.at(i));
+       Column_mn = ui->bee_cell_table->column(items.at(i));
+       Column_mx = Column_mn;
+       Row_mx = Row_mn;
+       }
+       Row = ui->bee_cell_table->row(items.at(i));
+       Column = ui->bee_cell_table->column(items.at(i));
+       if (Column < Column_mn )
+       {
+           Column_mn = Column;
+       }
+       if (Column > Column_mx)
+       {
+           Column_mx =Column;
+       }
+       if (Row < Row_mn )
+       {
+           Row_mn = Row;
+       }
+       if (Row > Row_mx)
+       {
+           Row_mx =Row;
+       }
+    }
+    for (int i =Row_mn ;i <=Row_mx ; i++)
+    {
+        for (int j = Column_mn ; j<=Column_mx;j++)
+        {
+             ui->bee_cell_table->item(i, j)->setFont(font);
+        }
+    }
 }
 void MainTable::Change_Color()
 {
@@ -450,4 +544,139 @@ void MainTable::Change_Color_text()
     }
 }
 
+void MainTable::on_pushButton_12_clicked()
+{
+    QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+    int Row_mn =0 , Row_mx =0;
+    int Column_mn =0 , Column_mx = 0;
+    int count = items.count();
+    int Row =0 ;
+    int Column =0;
+    for (int i =0 ; i < count ; i++)
+    {
+       if (i == 0)
+       {
+       Row_mn = ui->bee_cell_table->row(items.at(i));
+       Column_mn = ui->bee_cell_table->column(items.at(i));
+       Column_mx = Column_mn;
+       Row_mx = Row_mn;
+       }
+       Row = ui->bee_cell_table->row(items.at(i));
+       Column = ui->bee_cell_table->column(items.at(i));
+       if (Column < Column_mn )
+       {
+           Column_mn = Column;
+       }
+       if (Column > Column_mx)
+       {
+           Column_mx =Column;
+       }
+       if (Row < Row_mn )
+       {
+           Row_mn = Row;
+       }
+       if (Row > Row_mx)
+       {
+           Row_mx =Row;
+       }
+    }
+    for (int i =Row_mn ;i <=Row_mx ; i++)
+    {
+        for (int j = Column_mn ; j<=Column_mx;j++)
+        {
+             ui->bee_cell_table->item(i, j)->setTextAlignment(Qt::AlignRight);
+        }
+    }
+}
 
+
+void MainTable::on_pushButton_10_clicked()
+{
+    QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+    int Row_mn =0 , Row_mx =0;
+    int Column_mn =0 , Column_mx = 0;
+    int count = items.count();
+    int Row =0 ;
+    int Column =0;
+    for (int i =0 ; i < count ; i++)
+    {
+       if (i == 0)
+       {
+       Row_mn = ui->bee_cell_table->row(items.at(i));
+       Column_mn = ui->bee_cell_table->column(items.at(i));
+       Column_mx = Column_mn;
+       Row_mx = Row_mn;
+       }
+       Row = ui->bee_cell_table->row(items.at(i));
+       Column = ui->bee_cell_table->column(items.at(i));
+       if (Column < Column_mn )
+       {
+           Column_mn = Column;
+       }
+       if (Column > Column_mx)
+       {
+           Column_mx =Column;
+       }
+       if (Row < Row_mn )
+       {
+           Row_mn = Row;
+       }
+       if (Row > Row_mx)
+       {
+           Row_mx =Row;
+       }
+    }
+    for (int i =Row_mn ;i <=Row_mx ; i++)
+    {
+        for (int j = Column_mn ; j<=Column_mx;j++)
+        {
+             ui->bee_cell_table->item(i, j)->setTextAlignment(Qt::AlignLeft);
+        }
+    }
+}
+
+
+void MainTable::on_pushButton_11_clicked()
+{
+    QList<QTableWidgetItem*> items = ui->bee_cell_table->selectedItems();
+    int Row_mn =0 , Row_mx =0;
+    int Column_mn =0 , Column_mx = 0;
+    int count = items.count();
+    int Row =0 ;
+    int Column =0;
+    for (int i =0 ; i < count ; i++)
+    {
+       if (i == 0)
+       {
+       Row_mn = ui->bee_cell_table->row(items.at(i));
+       Column_mn = ui->bee_cell_table->column(items.at(i));
+       Column_mx = Column_mn;
+       Row_mx = Row_mn;
+       }
+       Row = ui->bee_cell_table->row(items.at(i));
+       Column = ui->bee_cell_table->column(items.at(i));
+       if (Column < Column_mn )
+       {
+           Column_mn = Column;
+       }
+       if (Column > Column_mx)
+       {
+           Column_mx =Column;
+       }
+       if (Row < Row_mn )
+       {
+           Row_mn = Row;
+       }
+       if (Row > Row_mx)
+       {
+           Row_mx =Row;
+       }
+    }
+    for (int i =Row_mn ;i <=Row_mx ; i++)
+    {
+        for (int j = Column_mn ; j<=Column_mx;j++)
+        {
+             ui->bee_cell_table->item(i, j)->setTextAlignment(Qt::AlignCenter);
+        }
+    }
+}

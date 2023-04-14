@@ -34,6 +34,7 @@ public:
 private slots:
 void slotShortcutCtrlC();
 void slotShortcutCtrlV();
+void slotShortcutCtrlZ();
 void slotDelete();
 void showContextMenu(QPoint);
 void ChangeBoard();
@@ -42,12 +43,19 @@ void Delete_cell();
 void Change_font();
 void Change_Color();
 void Change_Color_text();
+void on_pushButton_12_clicked();
+
+void on_pushButton_10_clicked();
+
+void on_pushButton_11_clicked();
+
 private:
     Ui::MainTable *ui;
     QShortcut *keyCtrlC;
     QShortcut *Delete;
     QShortcut *keyCtrlV;
     QShortcut *keyCtrl;
+    QShortcut *keyCtrlZ;
 };
 
 #endif // MAINTABLE_H
