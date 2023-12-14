@@ -9,16 +9,23 @@
 #include <QTableWidgetItem>
 #include <QHeaderView>
 #include <QKeyEvent>
-class Right_mouse_button
-{
-private:
-    QMenu *pop_menu; //Меню по правой клавише
-    QAction *Action; //
+#include <QWidget>
+
+class QMenu;
+
+class ContextMenuDemo : public QWidget {
+    Q_OBJECT
+
 public:
-    Right_mouse_button();
-public slots :
-    void on_customContextMenuRequested(QPoint pos);
-    void copyData();
+    ContextMenuDemo( QWidget* parent = 0 );
+    ~ContextMenuDemo();
+
+protected:
+    void contextMenuEvent( QContextMenuEvent* e );
+
+private:
+    QMenu* m_menu;
+
 };
 
 #endif // RIGHT_MOUSE_BUTTON_H

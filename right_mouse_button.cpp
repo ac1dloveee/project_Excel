@@ -7,8 +7,21 @@
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QHeaderView>
-extern QTableWidget bee_cell_table;
-Right_mouse_button::Right_mouse_button()
-{
+#include <QContextMenuEvent>
+#include <QApplication>
+ContextMenuDemo::ContextMenuDemo( QWidget* parent )
+    : QWidget( parent ) {
 
+    m_menu = new QMenu( this );
+    QAction* exitAction = m_menu->addAction( "Exit" );
+    connect( exitAction, SIGNAL( triggered() ), qApp, SLOT( quit() ) );
+}
+
+ContextMenuDemo::~ContextMenuDemo() {
+}
+
+void ContextMenuDemo::contextMenuEvent( QContextMenuEvent* e ) {
+    if( m_menu ) {
+        m_menu->exec( e->globalPos() );
+    }
 }
